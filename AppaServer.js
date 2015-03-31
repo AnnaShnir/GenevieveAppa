@@ -3,9 +3,7 @@ var port = 3000;
 var fs = require('fs')
 
 var clients = [];
-
-
-
+var headcount = 0;
 
 // adding startsWith ince node seems to be missing it
 String.prototype.startsWith = function(str) {
@@ -19,94 +17,54 @@ String.prototype.startsWith = function(str) {
     - message - client posting message
  */
 
-
-function broadcastMessage(from, message) {
-  for (var i = 0; i < clients.length; i++) {
-    if (clients[i].client != from) {
-      clients[i].socket.write("action-what-she-said|" + from + "|" + message);
-    }
-  }
-}
-
-
 function onClientConnected(socket) {
   console.log("[server.onClientConnected] client connected");
-
-  socket.write("action-name");
+  socket.write("To sign up for the upcoming Meet-up, enter 'sign up, your name, email, and hit enter");
 }
 
 var server = net.createServer(function(socket) {
   onClientConnected(socket);
-
-/*
-  process.stdin.setEncoding('utf8');
-
-  process.stdin.on('readable', function() {
-    var chunk = process.stdin.read();
-    if (chunk != null) {
-      client.write("Server: " + chunk);
-    }
-  });
-*/
-// socket.write(randomComplement);
   
   socket.on("data", function(data) {
     data = data.toString().trim();
-
-      fs.writeFile('attendees.txt', clients, function (err) {
-    if (err) throw err;
-    console.log('one sign up added');
-  });
-
-    var protocol = data.split('|');
-
-    if (protocol[0] === 'action-client-name') {
+    var protocol = data.split(' ');
+    console.log(protocol);
+    headcount+=1;
+    console.log(headcount);
+    socket.write("your number in line is " + headcount);
+    // socket.write("your number in the longest line of developers is" + headcoount);
+    if (protocol[0] === 'sign up,') {
       // if server receives this action, it means that 
       // client is providing name to it
       //    format: action-client-name|NAME
       var clientName = protocol[1];
       var email = protocol[2];
-      clients.push( { 'client': clientName, 'socket': socket, 'email': email});
-
-      socket.write("action-ready-to-chat");
-    } else if (protocol[0] === 'action-client-says') {
-      // client sent a chat message
-
-      var receivedMessage = protocol[2];
-      console.log("New message from: " + protocol[1] + " message: " + receivedMessage);
-
-      // if ( receivedMessage.startsWith('manual') ) {
-      //   socket.write("Manual: something something from the specs")
-      // }
-
-      ///////////////////////////////
-      //separate commands for G.:
-      // if ( receivedMessage.startsWith('/Genie&!*') ) {  // the passphrase can be agreed upon with G.
-      //   // client sent command:
-      //   var commands = receivedMessage.split(' ');
-      //   function printlist() {
-      //     //send a message to Genie containing JSON file with names of those who signed up
-      //   }
+      clients.push( { 'client': clientName, 'email': email});
 
 
+      var attendees = JSON.stringify(clients.join(""));
+      fs.writeFile("attendees.json", attendees, function(err) {    
+        if (err) {
+          console.log(err);
+        }
+        });
+      fs.readFile("attendees.json", function(err) {   
+        if (err) {
+          console.log(err);
+        }
+      });
 
-        // if (commands[0] === '/Genie&!*' && commands[1] 'printlist') {
-        //   // looks like G. wants a list of attendees for the upcomung Meet-up
-        //   // printlist(commands[1]);
+      socket.write("Thanks for signiing up!");
 
-  //     } else {
-
-  //       // send the new message to every other client connected
-  //       broadcastMessage(protocol[1], receivedMessage);
-  //     }
+    } else if (protocol[0] === '/Genie&!*' && protocol[1] === 'printlist') {
+      fs.readFile("attendees.json", function(err, data) {
+        if (err) {
+          console.log(err);
+        } else {
+          socket.write(data);
+        }
+      });
     }
-
-
-
-
-
-
-
   });
 
   socket.on("end", function() {

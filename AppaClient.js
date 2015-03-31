@@ -25,10 +25,6 @@ var name;
 
 //   process.stdin.on('readable', listener);
 // }
-
-function getAndWriteNameToServer(client) {
-  console.log('To sign up for the upcoming Meet-up, enter your name, email and hit enter:');
-
   process.stdin.setEncoding('utf8');
 
   var listener = function() {
