@@ -19,7 +19,7 @@ String.prototype.startsWith = function(str) {
 
 function onClientConnected(socket) {
   console.log("[server.onClientConnected] client connected");
-  socket.write("To sign up for the upcoming Meet-up, enter 'sign up, your name, email, and hit enter");
+  socket.write("If you're new here, type 'manual' :) To sign up for the upcoming Meet-up, enter 'sign up, your name, email, and hit enter");
 }
 
 var server = net.createServer(function(socket) {
@@ -33,6 +33,11 @@ var server = net.createServer(function(socket) {
     console.log(headcount);
     socket.write("your number in line is " + headcount);
     // socket.write("your number in the longest line of developers is" + headcoount);
+    if (protocol[0] === 'manual') {
+      socket.write("to sign-up for the next Meet-up ")
+    }
+
+
     if (protocol[0] === 'sign up,') {
       // if server receives this action, it means that 
       // client is providing name to it
